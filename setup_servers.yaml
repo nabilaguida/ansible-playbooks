@@ -1,0 +1,50 @@
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        cashe_valid_time: 3600
+        upgrade: yes
+
+    - name: Install required packages for Docker
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - gnupg
+
+    - name: Add Docker’s official GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+        filename: docker
+
+    - name: Update apt package index after adding Docker repo
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-compose
+        state: present
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add user 'nabil' to Docker group
+      user:
+        name: "nabil"
+        groups: docker
+        append: yes
